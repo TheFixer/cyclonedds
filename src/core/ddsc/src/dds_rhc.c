@@ -1675,6 +1675,7 @@ static void set_sample_info (dds_sample_info_t *si, const struct rhc_instance *i
   si->absolute_generation_rank = (inst->disposed_gen + inst->no_writers_gen) - (sample->disposed_gen + sample->no_writers_gen);
   si->valid_data = true;
   si->source_timestamp = sample->sample->timestamp.v;
+  si->seq_no = sample->sample->seq_no;
 }
 
 static void set_sample_info_invsample (dds_sample_info_t *si, const struct rhc_instance *inst)
@@ -1691,6 +1692,7 @@ static void set_sample_info_invsample (dds_sample_info_t *si, const struct rhc_i
   si->absolute_generation_rank = 0;
   si->valid_data = false;
   si->source_timestamp = inst->tstamp.v;
+  si->seq_no = 0;  /* sequence number for invalid sample is meaningless; use 0 in this case */
 }
 
 static void patch_generations (dds_sample_info_t *si, uint32_t last_of_inst)

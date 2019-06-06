@@ -1779,13 +1779,14 @@ static int handle_Gap (struct receiver_state *rst, nn_etime_t tnow, struct nn_rm
   return 1;
 }
 
-static struct ddsi_serdata *get_serdata (struct ddsi_sertopic const * const topic, const struct nn_rdata *fragchain, uint32_t sz, int justkey, unsigned statusinfo, nn_wctime_t tstamp)
+static struct ddsi_serdata *get_serdata (struct ddsi_sertopic const * const topic, const struct nn_rdata *fragchain, uint32_t sz, int justkey, unsigned statusinfo, nn_wctime_t tstamp, int64_t seq_no)
 {
   struct ddsi_serdata *sd = ddsi_serdata_from_ser (topic, justkey ? SDK_KEY : SDK_DATA, fragchain, sz);
   if (sd)
   {
     sd->statusinfo = statusinfo;
     sd->timestamp = tstamp;
+    sd->seq_no = seq_no;
   }
   return sd;
 }
@@ -1815,7 +1816,7 @@ static struct ddsi_serdata *extract_sample_from_data
               data_smhdr_flags, sampleinfo->size);
       return NULL;
     }
-    sample = get_serdata (topic, fragchain, sampleinfo->size, 0, statusinfo, tstamp);
+    sample = get_serdata (topic, fragchain, sampleinfo->size, 0, statusinfo, tstamp, sampleinfo->seq);
   }
   else if (sampleinfo->size)
   {
@@ -1824,12 +1825,12 @@ static struct ddsi_serdata *extract_sample_from_data
        as one would expect to receive */
     if (data_smhdr_flags & DATA_FLAG_KEYFLAG)
     {
-      sample = get_serdata (topic, fragchain, sampleinfo->size, 1, statusinfo, tstamp);
+      sample = get_serdata (topic, fragchain, sampleinfo->size, 1, statusinfo, tstamp, sampleinfo->seq);
     }
     else
     {
       assert (data_smhdr_flags & DATA_FLAG_DATAFLAG);
-      sample = get_serdata (topic, fragchain, sampleinfo->size, 0, statusinfo, tstamp);
+      sample = get_serdata (topic, fragchain, sampleinfo->size, 0, statusinfo, tstamp, sampleinfo->seq);
     }
   }
   else if (data_smhdr_flags & DATA_FLAG_INLINE_QOS)
